@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Kapaklı Mesleki ve Teknik Anadolu Lisesi Dijital Takvimi</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+    #clock {
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 20px;
+    }
+    .calendar {
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      width: 600px;
+    }
+    #monthYear {
+      font-size: 18px;
+      margin: 10px 0;
+      font-weight: bold;
+      text-align: center;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .controls button {
+      padding: 6px 12px;
+      margin: 0 10px;
+      cursor: pointer;
+    }
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .day, .weekday {
+      padding: 12px;
+      border-radius: 4px;
+      background-color: #e0e0e0;
+      text-align: center;
+      transition: 0.3s;
+      position: relative;
+    }
+    .weekday {
+      background-color: #ccc;
+      font-weight: bold;
+    }
+    .day:hover {
+      background-color: #d4d4d4;
+      transform: scale(1.05);
+    }
+    .special-day {
+      background-color: #FF9800 !important;
+      color: #fff;
+      font-weight: bold;
+    }
+    .event-day {
+      background-color: #4CAF50 !important;
+      color: #fff;
+      font-weight: bold;
+    }
+    .hover-effect::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 1;
+    }
+    .hover-effect:hover::after {
+      opacity: 1;
+    }
+    .hover-effect span {
+      position: relative;
+      z-index: 2;
+    }
+    .info-box {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      width: 400px;
+      height: auto;
+      position: relative;
+    }
+    .info-box.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .info-box img {
+      max-width: 100%;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    .info-box h4 {
+      margin: 0 0 5px;
+    }
+    .info-box p {
+      font-size: 14px;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Kapaklı Mesleki ve Teknik Anadolu Lisesi</h1>
+  <h1>Etkinlik Takvimi</h1>
+  <div id="clock"></div>
+  <div class="container">
+    <div class="calendar">
+      <div class="controls">
+        <button onclick="changeMonth(-1)">◀ Önceki</button>
+        <button onclick="changeMonth(1)">Sonraki ▶</button>
+      </div>
+      <div id="monthYear"></div>
+      <div class="days" id="calendarDays"></div>
+    </div>
+    <div class="info-box" id="infoBox">
+      <img src="images" alt="" id="infoImg">
+      <h4 id="infoTitle"></h4>
+      <p id="infoDesc"></p>
+    </div>
+  </div>
+  <script>
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleTimeString('tr-TR');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    const months = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+    const weekdays = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+
+    const specialDays = {
+
+      "2025-05-19": { title: "19 Mayıs", desc: "Gençlik ve Spor Bayramı.", img: "19 mayıs.png", type: "special" },
+      "2025-05-09": { title: "Vialand Gezisi", desc: "İstanbul gezisi.", img: "images/vialand.jpg", type: "event" },
+      "2025-05-12": { title: "Çanakkale Gezisi", desc: "Şehitlik ziyareti.", img: "images/canakkale.jpg", type: "event" },
+      "2025-05-22": { title: "Kermes", desc: "Gençlik şöleni ve kermes.", img: "images/kermes.jpg", type: "event" },
+      "2025-06-06": { title: "Kurban Bayramı", desc: "Bayram tatili.", img: "images/kurban.jpg", type: "event" },
+      "2025-06-16": { title: "Sergi & Şiir", desc: "Resim sergisi ve şiir dinletisi.", img: "images/sergi.jpg", type: "event" },
+      "2025-06-18": { title: "Mezuniyet", desc: "Okul mezuniyeti.", img: "18 haziran.jpg", type: "event" },
+      "2025-06-20": { title: "Karne Günü", desc: "Karne dağıtımı.", img: "images/karne.jpg", type: "event" }
+    };
+
+    let current = new Date();
+    const calendarEl = document.getElementById("calendarDays");
+    const monthYearEl = document.getElementById("monthYear");
+    const infoBox = document.getElementById("infoBox");
+    const infoImg = document.getElementById("infoImg");
+    const infoTitle = document.getElementById("infoTitle");
+    const infoDesc = document.getElementById("infoDesc");
+
+    function generateCalendar(date) {
+      const y = date.getFullYear();
+      const m = date.getMonth();
+      monthYearEl.textContent = `${months[m]} ${y}`;
+      calendarEl.innerHTML = "";
+
+      weekdays.forEach(day => {
+        const el = document.createElement("div");
+        el.className = "weekday";
+        el.textContent = day;
+        calendarEl.appendChild(el);
+      });
+
+      const firstDay = (new Date(y, m, 1).getDay() + 6) % 7;
+      for (let i = 0; i < firstDay; i++) {
+        calendarEl.appendChild(document.createElement("div"));
+      }
+
+      const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const div = document.createElement("div");
+        div.className = "day";
+        const span = document.createElement("span");
+        span.textContent = d;
+        div.appendChild(span);
+
+        const key = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        if (specialDays[key]) {
+          div.classList.add(specialDays[key].type === "special" ? "special-day" : "event-day", "hover-effect");
+          div.addEventListener("mouseenter", () => showInfo(specialDays[key]));
+          div.addEventListener("mouseleave", hideInfo);
+        }
+
+        calendarEl.appendChild(div);
+      }
+    }
+
+    function showInfo(data) {
+      infoImg.src = data.img;
+      infoTitle.textContent = data.title;
+      infoDesc.textContent = data.desc;
+      infoBox.classList.add("show");
+    }
+
+    function hideInfo() {
+      infoBox.classList.remove("show");
+    }
+
+    function changeMonth(delta) {
+      current.setMonth(current.getMonth() + delta);
+      generateCalendar(current);
+    }
+
+    generateCalendar(current);
+  </script>
+</body>
+</html>
